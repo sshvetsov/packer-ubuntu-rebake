@@ -1,18 +1,49 @@
 {
-  "variables": {
-    "aws_access_key": "",
-    "aws_secret_key": ""
-  },
-  "builders": [
-    {
-      "type": "amazon-ebs",
-      "access_key": "{{user `aws_access_key`}}",
-      "secret_key": "{{user `aws_secret_key`}}",
-      "region": "us-east-1",
-      "source_ami": "ami-fce3c696",
-      "instance_type": "t2.micro",
-      "ssh_username": "ubuntu",
-      "ami_name": "packer-example {{timestamp}}"
-    }
-  ]
+    "variables": {
+        "region": "",
+        "vpc_id": "",
+        "subnet_id": "",
+        "associate_public_ip_address": ""
+    },
+    "builders": [
+        {
+            "type": "amazon-ebs",
+            "region": "{{user `region`}}",
+            "source_ami_filter": {
+                "filters": {
+                    "virtualization-type": "hvm",
+                    "name": "*ubuntu-trusty-14.04*",
+                    "root-device-type": "ebs",
+                    "architecture": "x86_64"
+                },
+                "owners": [
+                    "099720109477"
+                ],
+                "most_recent": "true"
+            },
+            "instance_type": "t2.micro",
+            "ssh_username": "ubuntu",
+            "ami_name": "hvm-ssd/ubuntu-trusty-14.04-x86_64-server",
+            "ami_block_device_mappings": [
+                {
+                    "device_name": "/dev/sdb",
+                    "no_device": "true"
+                },
+                {
+                    "device_name": "/dev/sdc",
+                    "no_device": "true"
+                }
+            ],
+            "ami_description": "Ubuntu Trusty 14.04 x86_64 Server",
+            "tags": {
+                "SourceAMI": "{{ .SourceAMI }}",
+                "BuildRegion": "{{ .BuildRegion }}"
+            },
+            "vpc_id": "{{user `vpc_id`}}",
+            "subnet_id": "{{user `subnet_id`}}",
+            "associate_public_ip_address": "{{user `associate_public_ip_address`}}",
+            "force_deregister": "true",
+            "force_delete_snapshot": "true"
+        }
+    ]
 }
